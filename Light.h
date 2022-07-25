@@ -11,10 +11,7 @@ public:
 	glm::vec3 position;
 	glm::vec3 intensity;
 
-	Light(glm::vec3 pos, glm::vec3 i) {
-		position = pos;
-		intensity = i;
-	}
+	Light(glm::vec3 pos, glm::vec3 i) : position(pos), intensity(i){}
 };
 
 #endif
