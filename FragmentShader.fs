@@ -47,7 +47,7 @@ struct Light{
 };
 
 uniform Sphere spheres[NUM_SPHERES];
-uniform Plane planes[NUM_SPHERES];
+uniform Plane planes[NUM_PLANES];
 uniform Light lights[NUM_LIGHTS];
 uniform mat4 c2w;
 uniform float view_pixel_width;		//width of viewport pixel
@@ -117,9 +117,9 @@ Ray ComputeScatterRay(HitInfo hit, Ray incidentRay)
 		if(dot(target,hit.normal) < 0.0f){
 			target = -target;
 		}
-		target = scatter.pos + target;
-		scatter.dir = normalize(target - scatter.pos);
-
+		//target = scatter.pos + target;
+		//scatter.dir = normalize(target - scatter.pos);
+		scatter.dir = normalize(target);
 		return scatter;
 	}
 	else if(hit.mtl.metallic){
