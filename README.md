@@ -7,6 +7,7 @@ Tracing a single path for all pixels is rendered to a frame buffer to make the a
 
 The camera can be controlled with WASD keys and mouse.  
 
+A short demo can be found [here](https://youtu.be/bd4JVKlihOA).  
 A screenshot of the scene:  
 ![Image](image.png)
 
