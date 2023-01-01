@@ -2,7 +2,7 @@
 A Path Tracer implemented using the OpenGL API and c++:  
 Diffuce and metallic materials supported.  
 For diffuse objects, a random direction over the hemishphere on the hit point is calculatd as the scatter ray.  
-For metallic objects, the perfect reflection direction (mirror-like reflection) is calculated as the scatter ray.
+For metallic objects, the perfect reflection direction (mirror-like reflection) is calculated as the scatter ray.  
 Tracing a single path for all pixels is rendered to a frame buffer to make the application more interactive. Thus, by each frame, more light paths are explored  and the image quality improves.
 
 The camera can be controlled with WASD keys and mouse.  
