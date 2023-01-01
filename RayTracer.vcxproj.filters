@@ -49,5 +49,8 @@
     <None Include="VertexShader.vs">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="ViewFragmentShader.fs">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

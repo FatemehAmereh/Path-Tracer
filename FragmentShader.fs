@@ -1,9 +1,8 @@
-#version 330 core
+#version 460 core
 #define NUM_SPHERES	7
 #define NUM_PLANES	5
 #define NUM_LIGHTS	1
 #define MAX_BOUNCE 50
-#define SAMPLE_PER_PIXEL 100
 #define PI        3.14159265358979323
 
 out vec4 FragColor;
@@ -58,49 +57,53 @@ Ray GeneratePrimaryRay();
 Ray ComputeScatterRay(HitInfo hit, Ray incidentRay);
 bool IntersectRay(inout HitInfo hit,Ray ray);
 vec3 Shade(vec3 position, vec3 normal, vec3 view, Material mtl);
-float rand(vec2 co);
+float rand( );
 
 vec2 seed;
 vec3 cameraPos;
 vec3 errorRay = vec3(2,2,2);
 
+
+//new
+uniform sampler2D resultTexture;
+uniform uint width;
+uniform uint height;
+uniform bool cameraIsMoving;
+
 void main(){
 	cameraPos = (c2w*vec4(0.0f, 0.0f, 0.0f,1.0f)).xyz;
-	vec3 color = vec3(0.0f,0.0f,0.0f);
 	seed = gl_FragCoord.xy;
 	
-	for(int i=0 ; i<SAMPLE_PER_PIXEL ; i++)
-	{
-		Ray ray = GeneratePrimaryRay();
-		vec3 tmpColor = vec3(1.0f,1.0f,1.0f);
-		int depth = MAX_BOUNCE;
+	Ray ray = GeneratePrimaryRay();
+	vec3 color = vec3(1.0f,1.0f,1.0f);
+	int depth = MAX_BOUNCE;
 		
-		for(int j = 0 ; j < MAX_BOUNCE ; j++){		
-			HitInfo hit;
-			if(IntersectRay(hit, ray)){
-				tmpColor *= hit.mtl.attenuation;
-				ray = ComputeScatterRay(hit, ray);
-				if(ray.dir == errorRay){
-					//material is not defined
-					tmpColor *= vec3(0,0,0);
-					break;
-				}
-			}
-			else{	
-				//sky color
-				float t = 0.5*(ray.dir.y + 1.0);
-				tmpColor *= (1.0-t)*vec3(1.0, 1.0, 1.0) + t*vec3(0.5, 0.7, 1.0);
+	for(int j = 0 ; j < MAX_BOUNCE ; j++){		
+		HitInfo hit;
+		if(IntersectRay(hit, ray)){
+			color *= hit.mtl.attenuation;
+			ray = ComputeScatterRay(hit, ray);
+			if(ray.dir == errorRay){
+				//material is not defined
+				color *= vec3(0,0,0);
 				break;
 			}
-			depth--;
 		}
-		if(depth <= 0){	
-			//no light path toward the light source with the given depth
-			tmpColor *= vec3(0,0,0);
+		else{	
+			//sky color
+			float t = 0.5*(ray.dir.y + 1.0);
+			color *= (1.0-t)*vec3(1.0, 1.0, 1.0) + t*vec3(0.5, 0.7, 1.0);
+			break;
 		}
-		color+=tmpColor;
+		depth--;
 	}
-	FragColor = vec4(color / SAMPLE_PER_PIXEL, 1.0f);
+	if(depth <= 0){	
+		//no light path toward the light source with the given depth
+		color *= vec3(0);
+	}
+
+	vec3 prevColor = cameraIsMoving ? vec3(0) : texture(resultTexture, vec2(gl_FragCoord.x / float(width), gl_FragCoord.y / float(height))).rgb;
+	FragColor = vec4(prevColor + color,1);
 }
 
 Ray ComputeScatterRay(HitInfo hit, Ray incidentRay)
@@ -109,8 +112,8 @@ Ray ComputeScatterRay(HitInfo hit, Ray incidentRay)
 	scatter.pos = hit.position + 1e-3 * hit.normal;
 
 	if(hit.mtl.diffuse){												
-		float y =  rand(seed)* 2.0 -1.0;
-		float phi = 2*PI*rand(seed);
+		float y =  rand() * 2.0 -1.0;
+		float phi = 2*PI*rand();
 		float x = sqrt(1-y*y)*cos(phi);
 		float z = sqrt(1-y*y)*sin(phi);
 		vec3 target = normalize(vec3 (x,y,z));
@@ -186,10 +189,10 @@ bool IntersectRay(inout HitInfo hit,Ray ray){
 }
 
 Ray GeneratePrimaryRay(){
-	float n = rand(seed);													//0, 1
+	float n = rand();													//0, 1
 	float y = view_pixel_width * (n-1) + 0.5f*view_pixel_width	;			// -1/2*view_pixel_width , 1/2*view_pixel_width
 	float offsetX = y;
-	n = rand(seed);															//0, 1
+	n = rand();															//0, 1
 	y = view_pixel_height * (n-1) + 0.5f*view_pixel_height	;				// -1/2*view_pixel_width , 1/2*view_pixel_width
 	float offsetY = y;
 
@@ -199,7 +202,7 @@ Ray GeneratePrimaryRay(){
 	return ray;
 }
 
-float rand(vec2 co){
+float rand(){
 	seed-=randomVector;
-	return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+	return fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }
